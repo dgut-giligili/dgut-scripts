@@ -1,0 +1,1 @@
+selectCourseDoing(<id>, 'sel');
