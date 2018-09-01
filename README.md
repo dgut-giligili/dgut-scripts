@@ -1,4 +1,4 @@
-# dgut-scripts
+# Scripts
 
 Useful scripts for dgut.edu.cn
 
