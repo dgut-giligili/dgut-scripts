@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import re
+import copy
 from random import choice
 from datetime import datetime
 import requests
@@ -55,14 +56,15 @@ practice_place = "华为实验室"
 
 
 def date_list(begin_date, end_date):
+    day_list = []
     # beginDate, endDate是形如‘20160601’的字符串或datetime格式
     dl = [datetime.strftime(x, '%Y-%m-%d') for x in list(pd.date_range(start=begin_date, end=end_date))]
     # 去除周末
     for day in dl:
         tmp = datetime.strptime(day, '%Y-%m-%d')
-        if tmp.isoweekday() == 5 or tmp.isoweekday() == 6:
-            dl.remove(day)
-    return dl
+        if tmp.isoweekday() in [1, 2, 3, 4, 5]:
+            day_list.append(day)
+    return day_list
 
 
 def login():
@@ -74,8 +76,8 @@ def login():
     return session
 
 
-def addlog(session, date_list):
-    begin_date = str(date_list[0].replace("-", "/"))
+def addlog(session, day_list):
+    begin_date = str(day_list[0].replace("-", "/"))
     myselect_url = "https://shixun.dgut.edu.cn/student/dailyEditBoard?dailyTime=" + begin_date
     myselect_page = session.get(url=myselect_url, verify=False)
     my_select = re.findall("<option value=\"(.*?)\">", myselect_page.text, re.S)[0].encode("utf-8")
@@ -88,14 +90,13 @@ def addlog(session, date_list):
         # "dailyContent": content,
         # "content": content,
     }
-    for daytime in date_list:
+    for daytime in day_list:
         data["dailyTime"] = str(daytime)
         content = "计算机与网络安全学院专业综合实训地点：%s，日期：%s，正文：今天的任务是：%s，我遇到了：%s，结果：%s" % \
                   (practice_place, str(daytime), choice(class_list), choice(encounter), choice(result))
         data["dailyContent"] = data["content"] = content
-        print(content)
         confirm = session.post(url=daily_url, headers=daily_headers, data=data, verify=False)
-        # print(str(daytime) + ": " + confirm.text)
+        print(str(daytime) + ": " + confirm.text)
 
 
 if __name__ == '__main__':
